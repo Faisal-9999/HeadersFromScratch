@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <typeinfo>
 #include <initializer_list>
 
 template<typename T>
@@ -13,7 +14,6 @@ private:
 	int space;
 
 public:
-
 
 	vector() {
 		length = 0;
@@ -34,8 +34,76 @@ public:
 		}
 	}
 
+	vector(const vector<T>& Vector) {
+		this->length = Vector.length;
+		this->space = Vector.length * 2;
+
+		delete[] arr;
+		arr = new T[space];
+
+		for (int i = 0; i < length; i++) {
+			arr[i] = Vector.arr[i];
+		}
+	}
+
 	~vector() {
 		delete[] arr;
+	}
+
+	vector operator+ (vector<T>& Vector) noexcept {
+		vector<T> holder;
+
+		holder.length = length + Vector.length;
+		holder.space = space + Vector.space;
+
+		holder.arr = new T[holder.space];
+
+		int index2 = 0;
+
+		for (int i = 0; i < holder.length; i++) {
+			if (i < this->length) {
+				holder[i] = arr[i];
+			}
+			else {
+				holder[i] = Vector[index2++];
+			}
+		}
+
+		return holder;
+	}
+
+	vector& operator= (const vector<T>& Vector) {
+		if (this == &Vector){
+			return *this;
+		}
+
+		this->length = Vector.length;
+		this->space = Vector.space;
+
+		delete[] arr;
+		arr = new T[space];
+
+		for (int i = 0; i < length; i++) {
+			arr[i] = Vector[i];
+		}
+
+		return *this;
+	}
+
+	vector& operator= (std::initializer_list<T> list) {
+		delete[] arr;
+		length = list.size();
+		space = length * 2;
+
+		arr = new T[space];
+
+		int i = 0;
+
+		for (const T& value : list) {
+			arr[i++] = value;
+		}
+
+		return *this;
 	}
 
 	bool operator==(vector<T>& other) {
@@ -66,7 +134,7 @@ public:
 		return arr[index];
 	}
 
-	void push_back(T object) {
+	void push_back(const T& object) {
 
 		if (length == space) {
 			space *= 2;
@@ -135,7 +203,6 @@ public:
 
 	void clear() {
 		delete[] arr;
-		arr = nullptr;
 		length = 0;
 		space = 1;
 
@@ -187,13 +254,45 @@ public:
 		return arr[length - 1];
 	}
 
+	void reserve(int amount) {
+
+		if (amount <= space){
+			return;
+		}
+
+		T* arr = new T[amount];
+
+		for (int i = 0; i < length; i++) {
+			arr[i] = this->arr[i];
+		}
+
+		delete[] this->arr;
+
+		this->arr = arr;
+		space = amount;
+	}
+
+	void assign(int lengthOfAssign, T& value) {
+		if (lengthOfAssign <= 0) {
+			return;
+		}
+
+		if (lengthOfAssign > space){
+			reserve(lengthOfAssign);
+		}
+
+		for (int i = 0; i < lengthOfAssign; i++) {
+			arr[i] = value;
+		}
+	}
+
 	template<typename... Arguments>
-	void emplace_back(Arguments&& args) {
+	void emplace_back(Arguments&&... args) {
 		if (length == space) {
 			resize(space * 2);
 		}
 
-		new (&arr[length]) T(std::forward<Arguments>(args));
+		new (&arr[length]) T(std::forward<Arguments>(args)...);
 	}
 
 	int size() {
