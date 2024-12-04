@@ -14,7 +14,6 @@ private:
 
 public:
 
-
 	vector() {
 		length = 0;
 		space = 1;
@@ -34,8 +33,54 @@ public:
 		}
 	}
 
+	vector(const vector<T>& Vector) {
+		this->length = Vector.length;
+		this->space = Vector.length * 2;
+
+		delete[] arr;
+		arr = new T[space];
+
+		for (int i = 0; i < length; i++) {
+			arr[i] = Vector.arr[i];
+		}
+	}
+
 	~vector() {
 		delete[] arr;
+	}
+
+	vector& operator= (const vector<T>& Vector) {
+		if (this == &Vector){
+			return *this;
+		}
+
+		this->length = Vector.length;
+		this->space = Vector.space;
+
+		delete[] arr;
+		arr = new T[space];
+
+		for (int i = 0; i < length; i++) {
+			this->arr[i] = Vector.arr[i];
+		}
+
+		return *this;
+	}
+
+	vector& operator= (std::initializer_list<T> list) {
+		delete[] arr;
+		length = list.size();
+		space = length * 2;
+
+		arr = new T[space];
+
+		int i = 0;
+
+		for (const T& value : list) {
+			arr[i++] = value;
+		}
+
+		return *this;
 	}
 
 	bool operator==(vector<T>& other) {
@@ -188,12 +233,12 @@ public:
 	}
 
 	template<typename... Arguments>
-	void emplace_back(Arguments&& args) {
+	void emplace_back(Arguments&&... args) {
 		if (length == space) {
 			resize(space * 2);
 		}
 
-		new (&arr[length]) T(std::forward<Arguments>(args));
+		new (&arr[length]) T(std::forward<Arguments>(args)...);
 	}
 
 	int size() {
