@@ -295,6 +295,35 @@ public:
 		new (&arr[length]) T(std::forward<Arguments>(args)...);
 	}
 
+	void insert(const T& value, int index) {
+
+		if (index < 0 || index > length) {
+			throw std::out_of_range("Out of bounds indexing");
+		}
+
+		T* arr = new T[length + 1];
+
+		arr[index] = value;
+
+		int index1 = 0;
+		int index2 = 0;
+
+		while (index2 < length) {
+			if (index1 == index) {
+				index1++;
+			}
+			else {
+				arr[index1++] = this->arr[index2++];
+			}
+		}
+
+		length++;
+		delete[] this->arr;
+
+
+		this->arr = arr;
+	}
+
 	int size() {
 		return length;
 	}
