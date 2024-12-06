@@ -230,6 +230,37 @@ public:
 		arr = arr2;
 	}
 
+	void erase(int index) {
+
+		if (empty()) {
+			throw std::invalid_argument("Can't erase elements in an empty vector");
+		}
+
+		if (index < 0 || index >= length) {
+			throw std::out_of_range("Out of bounds indexing");
+		}
+
+
+		T* holder = new T[length - 1];
+
+		int index1 = 0;
+		int index2 = 0;
+
+		while (index1 < length - 1) {
+			if (index2 == index) {
+				index2++;
+			}
+
+			holder[index1++] = arr[index2++];
+		}
+
+		delete[] arr;
+		arr = holder;
+
+		length--;
+
+	}
+
 	T* begin() {
 		return arr;
 	}
@@ -322,6 +353,32 @@ public:
 
 
 		this->arr = arr;
+	}
+
+	void swap(vector<T>& other) {
+		T* temp = other.arr;
+		other.arr = arr;
+		arr = temp;
+
+		int temp2 = other.length;
+		other.length = length;
+		length = temp2;
+
+		temp2 = other.space;
+		other.space = space;
+		space = temp2;
+	}
+
+	T at(int index) {
+		if (index < 0 || index >= length) {
+			throw std::out_of_range("Out of bounds indexing");
+		}
+
+		return arr[index];
+	}
+
+	T* data() {
+		return arr;
 	}
 
 	int size() {

@@ -6,11 +6,12 @@
 
 int main()
 {
-    vector<int> arr = { 1, 2, 3, 4 };
-    
-    arr.insert(10, 3);
+    vector<int> arr = {1, 2, 3};
+ 
+    int* a = arr.data();
 
     for (int i = 0; i < arr.size(); i++) {
-        std::cout << arr[i] << std::endl;
+        std::cout << *(a + i) << std::endl;
     }
+
 }
