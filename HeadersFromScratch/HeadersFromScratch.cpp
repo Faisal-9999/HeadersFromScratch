@@ -6,12 +6,9 @@
 
 int main()
 {
-    vector<int> arr = {1, 2, 3};
- 
-    int* a = arr.data();
+    vector<int> arr = { 1, 2, 3 };
 
-    for (int i = 0; i < arr.size(); i++) {
-        std::cout << *(a + i) << std::endl;
+    for (auto i = arr.cbegin(); i != arr.cend(); i++) {
+        std::cout << *i << std::endl;
     }
-
 }

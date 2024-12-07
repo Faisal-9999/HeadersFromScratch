@@ -1,25 +1,115 @@
 #pragma once
 
 #include <iostream>
-#include <typeinfo>
+#include <iterator>
 #include <initializer_list>
 
-template<typename T>
 
+template<typename T>
+class ConstReverseIterator {
+private:
+	T* arr;
+public:
+
+	ConstReverseIterator(T* arr) : arr(arr) {}
+
+	ConstReverseIterator<T>& operator++() {
+		--arr;
+		return *this;
+	}
+
+	ConstReverseIterator<T> operator++(int) {
+		ConstReverseIterator<T> holder = *this;
+		--arr;
+
+		return holder;
+	}
+
+	ConstReverseIterator<T>& operator--() {
+		++arr;
+		return *this;
+	}
+
+	ConstReverseIterator<T> operator--(int) {
+		ConstReverseIterator<T> holder = *this;
+		++arr;
+
+		return holder;
+	}
+
+	bool operator!= (const ConstReverseIterator<T>& other) {
+		return !(arr == other.arr);
+	}
+
+	bool operator== (const ConstReverseIterator<T>& other) {
+		return arr == &other.arr;
+	}
+
+	T& operator*() {
+		return *arr;
+	}
+};
+
+template<typename T>
+class ConstIterator {
+private:
+
+	T* arr;
+
+public:
+
+	ConstIterator(T* arr) : arr(arr) {}
+
+	ConstIterator<T>& operator++() {
+		++arr;
+		return *this;
+	}
+
+	ConstIterator<T> operator++(int) {
+		ConstIterator<T> holder = *this;
+		++arr;
+		return holder;
+	}
+
+	ConstIterator<T> operator--() {
+		--arr;
+		return *this;
+	}
+
+	ConstIterator<T> operator--(int) {
+		ConstIterator<T> holder = *this;
+		
+		--arr;
+
+		return holder;
+	}
+
+	bool operator==(const ConstIterator<T>& other) {
+		return arr == other.arr;
+	}
+
+	bool operator!=(const ConstIterator<T>& other) {
+		return !(arr == other.arr);
+	}
+
+	T& operator*() {
+		return *arr;
+	}
+};
+
+template<typename T>
 class vector {
 private:
 
 	T* arr;
-	int length;
-	int space;
+	size_t length;
+	size_t space;
 
 public:
+	using ConstReverseIterator = ConstReverseIterator<T>;
+	using ConstIterator = ConstIterator<T>;
 
-	vector() {
-		length = 0;
-		space = 1;
-		arr = new T[space];
-	}
+	vector() : length(0), space(1), arr(new T[space]) {}
 
 	vector(std::initializer_list<T> list) {
 		length = list.size();
@@ -86,6 +176,8 @@ public:
 		for (int i = 0; i < length; i++) {
 			arr[i] = Vector[i];
 		}
+
+		delete[] Vector.arr;
 
 		return *this;
 	}
@@ -351,7 +443,6 @@ public:
 		length++;
 		delete[] this->arr;
 
-
 		this->arr = arr;
 	}
 
@@ -369,7 +460,7 @@ public:
 		space = temp2;
 	}
 
-	T at(int index) {
+	T& at(int index) {
 		if (index < 0 || index >= length) {
 			throw std::out_of_range("Out of bounds indexing");
 		}
@@ -379,6 +470,24 @@ public:
 
 	T* data() {
 		return arr;
+	}
+
+	//solve this shit after waking up
+
+	ConstReverseIterator crbegin() {
+		return ConstReverseIterator(arr + length - 1);
+	}
+
+	ConstReverseIterator crend() {
+		return ConstReverseIterator(arr - 1);
+	}
+
+	ConstIterator cbegin() const {
+		return ConstIterator(arr);
+	}
+
+	ConstIterator cend()  const {
+		return ConstIterator(arr + length);
 	}
 
 	int size() {
