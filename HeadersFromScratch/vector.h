@@ -109,7 +109,9 @@ public:
 	using ConstReverseIterator = ConstReverseIterator<T>;
 	using ConstIterator = ConstIterator<T>;
 
-	vector() : length(0), space(1), arr(new T[space]) {}
+	vector() : length(0), space(1) {
+		arr = new T[space];
+	}
 
 	vector(std::initializer_list<T> list) {
 		length = list.size();

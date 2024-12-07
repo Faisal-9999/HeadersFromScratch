@@ -6,7 +6,9 @@
 
 int main()
 {
-    vector<int> arr = { 1, 2, 3 };
+    vector<int> arr;
+    arr.push_back(10);
+    arr.push_back(11);
 
     for (auto i = arr.cbegin(); i != arr.cend(); i++) {
         std::cout << *i << std::endl;
