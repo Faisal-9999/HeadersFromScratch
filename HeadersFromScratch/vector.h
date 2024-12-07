@@ -11,6 +11,8 @@ private:
 	T* arr;
 public:
 
+	static int count;
+
 	ConstReverseIterator(T* arr) : arr(arr) {}
 
 	ConstReverseIterator<T>& operator++() {
@@ -42,7 +44,7 @@ public:
 	}
 
 	bool operator== (const ConstReverseIterator<T>& other) {
-		return arr == &other.arr;
+		return arr == other.arr;
 	}
 
 	T& operator*() {
@@ -142,29 +144,7 @@ public:
 		delete[] arr;
 	}
 
-	vector operator+ (vector<T>& Vector) noexcept {
-		vector<T> holder;
-
-		holder.length = length + Vector.length;
-		holder.space = space + Vector.space;
-
-		holder.arr = new T[holder.space];
-
-		int index2 = 0;
-
-		for (int i = 0; i < holder.length; i++) {
-			if (i < this->length) {
-				holder[i] = arr[i];
-			}
-			else {
-				holder[i] = Vector[index2++];
-			}
-		}
-
-		return holder;
-	}
-
-	vector& operator= (const vector<T>& Vector) {
+	vector& operator= (vector<T>& Vector) {
 		if (this == &Vector){
 			return *this;
 		}
@@ -176,15 +156,13 @@ public:
 		arr = new T[space];
 
 		for (int i = 0; i < length; i++) {
-			arr[i] = Vector[i];
+			arr[i] = Vector.arr[i];
 		}
-
-		delete[] Vector.arr;
 
 		return *this;
 	}
 
-	vector& operator= (std::initializer_list<T> list) {
+	vector<T>& operator= (std::initializer_list<T> list) {
 		delete[] arr;
 		length = list.size();
 		space = length * 2;
@@ -201,7 +179,7 @@ public:
 	}
 
 	bool operator==(vector<T>& other) {
-		if (other.size() != length) {
+		if (other.length != length) {
 			return false;
 		}
 
@@ -215,7 +193,7 @@ public:
 		return true;
 	}
 	
-	bool operator!= (const vector<T>& other) {
+	bool operator!= (vector<T>& other) {
 		return !(*this == other);
 	}
 
@@ -251,7 +229,7 @@ public:
 	T pop_back() {
 
 		if (length == 0) {
-			throw "Segmentation Fault";
+			throw std::underflow_error("vector already empty");
 		}
 
 		length--;
@@ -259,15 +237,8 @@ public:
 	}
 
 	void resize(int size) {
-		if (size < 0) {
-			throw "Invalid Operation";
-		}
-
-		if (size == 0) {
-			delete[] arr;
-			arr = nullptr;
-			length = 0;
-			return;
+		if (size <= 0) {
+			throw std::invalid_argument("Invalid Operation");
 		}
 
 		T* arr2 = new T[size];
@@ -492,11 +463,11 @@ public:
 		return ConstIterator(arr + length);
 	}
 
-	int size() {
+	size_t size() {
 		return length;
 	}
 
-	int max_size() {
+	size_t max_size() {
 		return space;
 	}
 
