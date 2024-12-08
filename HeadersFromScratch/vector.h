@@ -128,6 +128,25 @@ public:
 		}
 	}
 
+	vector(vector<T>&& Vector) {
+		delete[] this->arr;
+		
+		this->arr = new T[Vector.space];
+
+		for (int i = 0; i < Vector.length; i++) {
+			this->arr[i] = Vector.arr[i];
+		}
+
+		this->length = Vector.length;
+		Vector.length = 0;
+
+		this->space = Vector.space;
+		Vector.space = 0;
+
+		delete[] Vector.arr;
+		Vector.arr = nullptr;
+	}
+
 	vector(const vector<T>& Vector) {
 		this->length = Vector.length;
 		this->space = Vector.length * 2;
@@ -236,6 +255,23 @@ public:
 		return arr[length];
 	}
 
+	void resize(size_t size, const T& value) {
+		if (size <= 0) {
+			throw std::invalid_argument("Invalid Operation");
+		}
+
+		space = size * 2;
+		length = size;
+		T* arr2 = new T[space];
+
+		for (size_t i = 0; i < size; i++) {
+			arr2[i] = value;
+		}
+
+		delete[] arr;
+		arr = arr2;
+	}
+
 	void resize(int size) {
 		if (size <= 0) {
 			throw std::invalid_argument("Invalid Operation");
@@ -269,7 +305,6 @@ public:
 	void clear() {
 		delete[] arr;
 		length = 0;
-		space = 1;
 
 		arr = new T[space];
 	}
@@ -391,10 +426,10 @@ public:
 		new (&arr[length]) T(std::forward<Arguments>(args)...);
 	}
 
-	void insert(const T& value, int index) {
+	void insert(size_t index, const T& value) {
 
 		if (index < 0 || index > length) {
-			throw std::out_of_range("Out of bounds indexing");
+			throw std::underflow_error("Out of bounds indexing");
 		}
 
 		T* arr = new T[length + 1];
@@ -468,6 +503,10 @@ public:
 	}
 
 	size_t max_size() {
+		return space;
+	}
+
+	size_t capacity() {
 		return space;
 	}
 

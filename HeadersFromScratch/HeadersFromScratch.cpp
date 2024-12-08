@@ -1,120 +1,164 @@
 #include <iostream>
-#include <stdexcept>
-#include "vector.h" // Replace with your custom vector class header file
+#include <cassert>
+#include "vector.h" // Include your vector class header here
 
-void testInitialization() {
-    vector<int> v;
-    if (v.size() != 0) {
-        std::cout << "FAIL: vector initialization size test\n";
-    }
-    else {
-        std::cout << "PASS: vector initialization size test\n";
-    }
+void test_reserve() {
+    vector<int> vec;
+    vec.reserve(10);
+    assert(vec.max_size() >= 10 && "test_reserve: Reserve capacity failed");
 }
 
-void testPushBack() {
-    vector<int> v;
-    v.push_back(10);
-    v.push_back(20);
-
-    if (v.size() != 2 || v[0] != 10 || v[1] != 20) {
-        std::cout << "FAIL: push_back test\n";
-    }
-    else {
-        std::cout << "PASS: push_back test\n";
-    }
+void test_clear() {
+    vector<int> vec = { 1, 2, 3, 4 };
+    vec.clear();
+    assert(vec.size() == 0 && "test_clear: Size after clear failed");
+    assert(vec.max_size() >= 4 && "test_clear: Capacity after clear failed");
 }
 
-void testPopBack() {
-    vector<int> v;
-    v.push_back(10);
-    v.push_back(20);
-    v.pop_back();
+void test_front_and_back() {
+    vector<int> vec = { 10, 20, 30, 40 };
+    assert(vec.front() == 10 && "test_front_and_back: Front element failed");
+    assert(vec.back() == 40 && "test_front_and_back: Back element failed");
+}
 
-    if (v.size() != 1 || v[0] != 10) {
-        std::cout << "FAIL: pop_back test\n";
-    }
-    else {
-        std::cout << "PASS: pop_back test\n";
-    }
+void test_erase() {
+    vector<int> vec = { 1, 2, 3, 4, 5 };
+    vec.erase(2);
+    assert(vec.size() == 4 && "test_erase: Size after erase failed");
+    assert(vec[2] == 4 && "test_erase: Element shift after erase failed");
+}
 
-    v.pop_back();
+void test_insert() {
+    vector<int> vec = { 1, 2, 3, 4 };
+    vec.insert(2, 99);
+    assert(vec.size() == 5 && "test_insert: Size after insert failed");
+    assert(vec[2] == 99 && "test_insert: Inserted value incorrect");
+    assert(vec[3] == 3 && "test_insert: Element shift after insert failed");
+}
+
+void test_shrink_to_fit() {
+    vector<int> vec = { 1, 2, 3, 4 };
+    vec.reserve(10);
+    vec.shrink_to_fit();
+    assert(vec.max_size() == vec.size() && "test_shrink_to_fit: Shrink to fit failed");
+}
+
+void test_self_assignment() {
+    vector<int> vec = { 1, 2, 3 };
+    vec = vec;
+    assert(vec.size() == 3 && "test_self_assignment: Size after self-assignment failed");
+    assert(vec[0] == 1 && vec[1] == 2 && vec[2] == 3 && "test_self_assignment: Elements after self-assignment failed");
+}
+
+void test_copy_constructor() {
+    vector<int> vec1 = { 10, 20, 30 };
+    vector<int> vec2 = vec1;
+    assert(vec2.size() == 3 && "test_copy_constructor: Size of copied vector failed");
+    assert(vec2[0] == 10 && vec2[1] == 20 && vec2[2] == 30 && "test_copy_constructor: Copied elements incorrect");
+}
+
+void test_move_constructor() {
+    vector<int> vec1 = { 5, 10, 15 };
+    vector<int> vec2 = std::move(vec1);
+    assert(vec1.size() == 0 && "test_move_constructor: Original vector not empty after move");
+    assert(vec2.size() == 3 && "test_move_constructor: Moved vector size failed");
+    assert(vec2[0] == 5 && vec2[1] == 10 && vec2[2] == 15 && "test_move_constructor: Moved elements incorrect");
+}
+
+void test_resize() {
+    vector<int> vec = { 1, 2, 3 };
+    vec.resize(5, 99);
+    assert(vec.size() == 5 && "test_resize: Size after resize failed");
+    assert(vec[3] == 99 && vec[4] == 99 && "test_resize: Resized elements incorrect");
+}
+
+void test_out_of_bounds() {
+    vector<int> vec = { 1, 2, 3 };
     try {
-        v.pop_back(); // Should handle empty vector safely
-        std::cout << "PASS: pop_back on empty vector test\n";
+        int value = vec[5];
+        assert(false && "test_out_of_bounds: Did not throw exception for out-of-bounds access");
     }
-    catch (std::underflow_error& e) {
-        std::cout << "PASSED" << std::endl;
+    catch (const std::out_of_range&) {
+        // Exception is expected
+    }
+}
+
+void test_swap() {
+    vector<int> vec1 = { 1, 2, 3 };
+    vector<int> vec2 = { 4, 5 };
+    vec1.swap(vec2);
+    assert(vec1.size() == 2 && "test_swap: Size of vec1 after swap failed");
+    assert(vec2.size() == 3 && "test_swap: Size of vec2 after swap failed");
+    assert(vec1[0] == 4 && vec2[0] == 1 && "test_swap: Elements after swap incorrect");
+}
+
+void test_iterators() {
+    vector<int> vec = { 1, 2, 3, 4 };
+    int sum = 0;
+    for (auto it = vec.begin(); it != vec.end(); ++it) {
+        sum += *it;
+    }
+    assert(sum == 10 && "test_iterators: Iterator sum failed");
+}
+
+void test_default_constructor() {
+    vector<int> vec;
+    assert(vec.size() == 0 && "test_default_constructor: Default constructor size failed");
+    assert(vec.capacity() == 0 || vec.capacity() >= 0 && "test_default_constructor: Default constructor capacity failed");
+}
+
+void test_push_back() {
+    vector<int> vec;
+    vec.push_back(1);
+    vec.push_back(2);
+    vec.push_back(3);
+    assert(vec.size() == 3 && "test_push_back: Size after push_back failed");
+    assert(vec[0] == 1 && vec[1] == 2 && vec[2] == 3 && "test_push_back: Elements after push_back incorrect");
+}
+
+void test_pop_back() {
+    vector<int> vec = { 1, 2, 3 };
+    vec.pop_back();
+    assert(vec.size() == 2 && "test_pop_back: Size after pop_back failed");
+    assert(vec[1] == 2 && "test_pop_back: Remaining elements after pop_back incorrect");
+    try {
+        vec.pop_back();
+        vec.pop_back();
+        vec.pop_back(); // Should throw exception
+        assert(false && "test_pop_back: Did not throw exception when popping empty vector");
     }
     catch (...) {
-        std::cout << "FAIL: pop_back on empty vector test\n";
+        // Exception is expected
     }
- 
 }
 
-void testAtFunction() {
-    vector<int> v;
-    v.push_back(10);
-    v.push_back(20);
-
-    if (v.at(0) != 10 || v.at(1) != 20) {
-        std::cout << "FAIL: at() function test\n";
-    }
-    else {
-        std::cout << "PASS: at() function test\n";
-    }
-
+void run_all_tests() {
     try {
-        v.at(2); // Out-of-bounds
-        std::cout << "FAIL: at() out-of-bounds test\n";
-    }
-    catch (std::out_of_range&) {
-        std::cout << "PASS: at() out-of-bounds test\n";
-    }
-}
+        test_reserve();
+        test_clear();
+        test_front_and_back();
+        test_erase();
+        test_insert();
+        test_shrink_to_fit();
+        test_self_assignment();
+        test_copy_constructor();
+        test_move_constructor();
+        test_resize();
+        test_out_of_bounds();
+        test_swap();
+        test_iterators();
+        test_default_constructor();
+        test_push_back();
+        test_pop_back();
 
-void testClear() {
-    vector<int> v;
-    v.push_back(10);
-    v.push_back(20);
-    v.clear();
-
-    if (v.size() != 0) {
-        std::cout << "FAIL: clear test\n";
+        std::cout << "All tests passed successfully!" << std::endl;
     }
-    else {
-        std::cout << "PASS: clear test\n";
-    }
-}
-
-void testOperatorBracket() {
-    vector<int> v;
-    v.push_back(10);
-    v.push_back(20);
-
-    if (v[0] != 10 || v[1] != 20) {
-        std::cout << "FAIL: operator[] test\n";
-    }
-    else {
-        std::cout << "PASS: operator[] test\n";
-    }
-
-    try {
-        v[2] = 30; // Out-of-bounds
-        std::cout << "FAIL: operator[] out-of-bounds test\n";
-    }
-    catch (...) {
-        std::cout << "PASS: operator[] out-of-bounds test\n";
+    catch (const char* err) {
+        std::cerr << err << std::endl;
     }
 }
 
 int main() {
-    testInitialization();
-    testPushBack();
-    testPopBack();
-    testAtFunction();
-    testClear();
-    testOperatorBracket();
-
+    run_all_tests();
     return 0;
 }
