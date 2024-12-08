@@ -11,8 +11,6 @@ private:
 	T* arr;
 public:
 
-	static int count;
-
 	ConstReverseIterator(T* arr) : arr(arr) {}
 
 	ConstReverseIterator<T>& operator++() {
