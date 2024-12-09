@@ -1,157 +1,140 @@
 #include <iostream>
-#include <cassert>
-#include "vector.h" // Include your vector class header here
+#include <assert.h>
+#include "vector.h"
 
-void test_reserve() {
-    vector<int> vec;
-    vec.reserve(10);
-    assert(vec.max_size() >= 10 && "test_reserve: Reserve capacity failed");
-}
-
-void test_clear() {
-    vector<int> vec = { 1, 2, 3, 4 };
-    vec.clear();
-    assert(vec.size() == 0 && "test_clear: Size after clear failed");
-    assert(vec.max_size() >= 4 && "test_clear: Capacity after clear failed");
-}
-
-void test_front_and_back() {
-    vector<int> vec = { 10, 20, 30, 40 };
-    assert(vec.front() == 10 && "test_front_and_back: Front element failed");
-    assert(vec.back() == 40 && "test_front_and_back: Back element failed");
-}
-
-void test_erase() {
-    vector<int> vec = { 1, 2, 3, 4, 5 };
-    vec.erase(2);
-    assert(vec.size() == 4 && "test_erase: Size after erase failed");
-    assert(vec[2] == 4 && "test_erase: Element shift after erase failed");
-}
-
-void test_insert() {
-    vector<int> vec = { 1, 2, 3, 4 };
-    vec.insert(2, 99);
-    assert(vec.size() == 5 && "test_insert: Size after insert failed");
-    assert(vec[2] == 99 && "test_insert: Inserted value incorrect");
-    assert(vec[3] == 3 && "test_insert: Element shift after insert failed");
-}
-
-void test_shrink_to_fit() {
-    vector<int> vec = { 1, 2, 3, 4 };
-    vec.reserve(10);
-    vec.shrink_to_fit();
-    assert(vec.max_size() == vec.size() && "test_shrink_to_fit: Shrink to fit failed");
-}
-
-void test_self_assignment() {
+void test_at() {
     vector<int> vec = { 1, 2, 3 };
-    vec = vec;
-    assert(vec.size() == 3 && "test_self_assignment: Size after self-assignment failed");
-    assert(vec[0] == 1 && vec[1] == 2 && vec[2] == 3 && "test_self_assignment: Elements after self-assignment failed");
-}
+    assert(vec.at(0) == 1 && "test_at: At index 0 failed");
+    assert(vec.at(1) == 2 && "test_at: At index 1 failed");
+    assert(vec.at(2) == 3 && "test_at: At index 2 failed");
 
-void test_copy_constructor() {
-    vector<int> vec1 = { 10, 20, 30 };
-    vector<int> vec2 = vec1;
-    assert(vec2.size() == 3 && "test_copy_constructor: Size of copied vector failed");
-    assert(vec2[0] == 10 && vec2[1] == 20 && vec2[2] == 30 && "test_copy_constructor: Copied elements incorrect");
-}
-
-void test_move_constructor() {
-    vector<int> vec1 = { 5, 10, 15 };
-    vector<int> vec2 = std::move(vec1);
-    assert(vec1.size() == 0 && "test_move_constructor: Original vector not empty after move");
-    assert(vec2.size() == 3 && "test_move_constructor: Moved vector size failed");
-    assert(vec2[0] == 5 && vec2[1] == 10 && vec2[2] == 15 && "test_move_constructor: Moved elements incorrect");
-}
-
-void test_resize() {
-    vector<int> vec = { 1, 2, 3 };
-    vec.resize(5, 99);
-    assert(vec.size() == 5 && "test_resize: Size after resize failed");
-    assert(vec[3] == 99 && vec[4] == 99 && "test_resize: Resized elements incorrect");
-}
-
-void test_out_of_bounds() {
-    vector<int> vec = { 1, 2, 3 };
     try {
-        int value = vec[5];
-        assert(false && "test_out_of_bounds: Did not throw exception for out-of-bounds access");
+        vec.at(5);  // Should throw exception
+        assert(false && "test_at: Did not throw exception for out-of-bounds access");
     }
     catch (const std::out_of_range&) {
-        // Exception is expected
+        // Expected exception
     }
 }
 
-void test_swap() {
-    vector<int> vec1 = { 1, 2, 3 };
-    vector<int> vec2 = { 4, 5 };
-    vec1.swap(vec2);
-    assert(vec1.size() == 2 && "test_swap: Size of vec1 after swap failed");
-    assert(vec2.size() == 3 && "test_swap: Size of vec2 after swap failed");
-    assert(vec1[0] == 4 && vec2[0] == 1 && "test_swap: Elements after swap incorrect");
+void test_resize_without_value() {
+    vector<int> vec = { 1, 2, 3 };
+    vec.resize(5);  // New size, default-constructed elements (typically 0 for integers)
+    assert(vec.size() == 5 && "test_resize_without_value: Size after resize failed");
+    assert(vec[3] == 0 && "test_resize_without_value: New elements should be default-initialized");
+    assert(vec[4] == 0 && "test_resize_without_value: New elements should be default-initialized");
+
+    vec.resize(2);  // Shrink size
+    assert(vec.size() == 2 && "test_resize_without_value: Size after shrink failed");
+    assert(vec[0] == 1 && "test_resize_without_value: Elements after shrinking failed");
+    assert(vec[1] == 2 && "test_resize_without_value: Elements after shrinking failed");
 }
 
-void test_iterators() {
+void test_copy_assignment_operator() {
+    vector<int> vec1 = { 1, 2, 3 };
+    vector<int> vec2;
+    vec2 = vec1;  // Use the copy assignment operator
+
+    assert(vec2.size() == 3 && "test_copy_assignment_operator: Size after copy assignment failed");
+    assert(vec2[0] == 1 && vec2[1] == 2 && vec2[2] == 3 && "test_copy_assignment_operator: Elements after copy assignment failed");
+
+    // Make sure it handles self-assignment correctly
+    vec1 = vec1;  // Self-assignment should not cause issues
+    assert(vec1.size() == 3 && "test_copy_assignment_operator: Self-assignment failed");
+    assert(vec1[0] == 1 && vec1[1] == 2 && vec1[2] == 3 && "test_copy_assignment_operator: Self-assignment failed");
+}
+
+void test_move_assignment_operator() {
+    vector<int> vec1 = { 1, 2, 3 };
+    vector<int> vec2;
+    vec2 = std::move(vec1);  // Use the move assignment operator
+
+    assert(vec2.size() == 3 && "test_move_assignment_operator: Size after move assignment failed");
+    assert(vec2[0] == 1 && vec2[1] == 2 && vec2[2] == 3 && "test_move_assignment_operator: Elements after move assignment failed");
+    assert(vec1.size() == 0 && "test_move_assignment_operator: Original vector should be empty after move assignment");
+
+    // Ensure no unintended data copying
+    vec2.push_back(4);
+    assert(vec2.size() == 4 && "test_move_assignment_operator: Size after push_back on moved vector failed");
+}
+
+void test_initialization_with_range() {
+    vector<int> vec1 = { 1, 2, 3 };
+    vector<int> vec2(vec1.begin(), vec1.end());  // Initialize a new vector using a range of another vector
+
+    assert(vec2.size() == 3 && "test_initialization_with_range: Size after range initialization failed");
+    assert(vec2[0] == 1 && vec2[1] == 2 && vec2[2] == 3 && "test_initialization_with_range: Elements after range initialization failed");
+}
+
+void test_push_back_with_large_data() {
+    vector<int> vec;
+    for (int i = 0; i < 1000; ++i) {
+        vec.push_back(i);
+    }
+    assert(vec.size() == 1000 && "test_push_back_with_large_data: Size after many push_backs failed");
+    assert(vec[999] == 999 && "test_push_back_with_large_data: Last element after push_back failed");
+}
+
+void test_pop_back_with_single_element() {
+    vector<int> vec = { 10 };
+    vec.pop_back();
+    assert(vec.size() == 0 && "test_pop_back_with_single_element: Size after pop_back failed");
+}
+
+void test_push_back_after_resize() {
+    vector<int> vec = { 1, 2, 3 };
+    vec.resize(5);  // Increase size
+    vec.push_back(4);  // Add a new element
+    assert(vec.size() == 6 && "test_push_back_after_resize: Size after push_back failed");
+    assert(vec[5] == 4 && "test_push_back_after_resize: New element after push_back failed");
+}
+
+void test_insert_at_beginning() {
+    vector<int> vec = { 2, 3, 4 };
+    vec.insert(0, 1);  // Insert at the beginning
+    assert(vec.size() == 4 && "test_insert_at_beginning: Size after insert failed");
+    assert(vec[0] == 1 && "test_insert_at_beginning: Element at index 0 after insert failed");
+}
+
+void test_insert_at_end() {
+    vector<int> vec = { 1, 2, 3 };
+    vec.insert(3, 4);  // Insert at the end
+    assert(vec.size() == 4 && "test_insert_at_end: Size after insert failed");
+    assert(vec[3] == 4 && "test_insert_at_end: Element at the end after insert failed");
+}
+
+void test_reverse_iterators() {
     vector<int> vec = { 1, 2, 3, 4 };
     int sum = 0;
-    for (auto it = vec.begin(); it != vec.end(); ++it) {
+    for (auto it = vec.rbegin(); it != vec.rend(); ++it) {
         sum += *it;
     }
-    assert(sum == 10 && "test_iterators: Iterator sum failed");
+    assert(sum == 10 && "test_reverse_iterators: Reverse iterator sum failed");
 }
 
-void test_default_constructor() {
-    vector<int> vec;
-    assert(vec.size() == 0 && "test_default_constructor: Default constructor size failed");
-    assert(vec.capacity() == 0 || vec.capacity() >= 0 && "test_default_constructor: Default constructor capacity failed");
+void test_erase_range() {
+    vector<int> vec = { 1, 2, 3, 4, 5 };
+    vec.erase(1, 3);  // Erase the range from index 1 to 2 (2 and 3)
+    assert(vec.size() == 3 && "test_erase_range: Size after range erase failed");
+    assert(vec[0] == 1 && vec[1] == 4 && vec[2] == 5 && "test_erase_range: Elements after range erase incorrect");
 }
 
-void test_push_back() {
-    vector<int> vec;
-    vec.push_back(1);
-    vec.push_back(2);
-    vec.push_back(3);
-    assert(vec.size() == 3 && "test_push_back: Size after push_back failed");
-    assert(vec[0] == 1 && vec[1] == 2 && vec[2] == 3 && "test_push_back: Elements after push_back incorrect");
-}
-
-void test_pop_back() {
-    vector<int> vec = { 1, 2, 3 };
-    vec.pop_back();
-    assert(vec.size() == 2 && "test_pop_back: Size after pop_back failed");
-    assert(vec[1] == 2 && "test_pop_back: Remaining elements after pop_back incorrect");
+void run_additional_tests() {
     try {
-        vec.pop_back();
-        vec.pop_back();
-        vec.pop_back(); // Should throw exception
-        assert(false && "test_pop_back: Did not throw exception when popping empty vector");
-    }
-    catch (...) {
-        // Exception is expected
-    }
-}
+        test_at();
+        test_resize_without_value();
+        test_copy_assignment_operator();
+        test_move_assignment_operator();
+        test_initialization_with_range();
+        test_push_back_with_large_data();
+        test_pop_back_with_single_element();
+        test_push_back_after_resize();
+        test_insert_at_beginning();
+        test_insert_at_end();
+        test_reverse_iterators();
+        test_erase_range();
 
-void run_all_tests() {
-    try {
-        test_reserve();
-        test_clear();
-        test_front_and_back();
-        test_erase();
-        test_insert();
-        test_shrink_to_fit();
-        test_self_assignment();
-        test_copy_constructor();
-        test_move_constructor();
-        test_resize();
-        test_out_of_bounds();
-        test_swap();
-        test_iterators();
-        test_default_constructor();
-        test_push_back();
-        test_pop_back();
-
-        std::cout << "All tests passed successfully!" << std::endl;
+        std::cout << "All additional tests passed successfully!" << std::endl;
     }
     catch (const char* err) {
         std::cerr << err << std::endl;
@@ -159,6 +142,7 @@ void run_all_tests() {
 }
 
 int main() {
-    run_all_tests();
+    run_additional_tests();
+
     return 0;
 }

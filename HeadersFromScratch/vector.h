@@ -1,9 +1,9 @@
 #pragma once
 
 #include <iostream>
-#include <iterator>
+#include <type_traits>
 #include <initializer_list>
-
+#include <algorithm> // only used for std::min
 
 template<typename T>
 class ConstReverseIterator {
@@ -30,18 +30,63 @@ public:
 		return *this;
 	}
 
-	ConstReverseIterator<T> operator--(int) {
+	 ConstReverseIterator<T> operator--(int) {
 		ConstReverseIterator<T> holder = *this;
 		++arr;
 
 		return holder;
-	}
+	 }
 
 	bool operator!= (const ConstReverseIterator<T>& other) {
 		return !(arr == other.arr);
 	}
 
 	bool operator== (const ConstReverseIterator<T>& other) {
+		return arr == other.arr;
+	}
+
+	const T& operator*() {
+		return *arr;
+	}
+};
+
+template<typename T>
+class ReverseIterator {
+private:
+	T* arr;
+public:
+
+	ReverseIterator(T* arr) : arr(arr) {}
+
+	ReverseIterator<T>& operator++() {
+		--arr;
+		return *this;
+	}
+
+	ReverseIterator<T> operator++(int) {
+		ReverseIterator<T> holder = *this;
+		--arr;
+
+		return holder;
+	}
+
+	ReverseIterator<T>& operator--() {
+		++arr;
+		return *this;
+	}
+
+	ReverseIterator<T> operator--(int) {
+		ReverseIterator<T> holder = *this;
+		++arr;
+
+		return holder;
+	}
+
+	bool operator!= (const ReverseIterator<T>& other) {
+		return !(arr == other.arr);
+	}
+
+	bool operator== (const ReverseIterator<T>& other) {
 		return arr == other.arr;
 	}
 
@@ -92,9 +137,10 @@ public:
 		return !(arr == other.arr);
 	}
 
-	T& operator*() {
+	const T& operator*() {
 		return *arr;
 	}
+
 };
 
 template<typename T>
@@ -108,9 +154,32 @@ private:
 public:
 	using ConstReverseIterator = ConstReverseIterator<T>;
 	using ConstIterator = ConstIterator<T>;
+	using ReverseIterator = ReverseIterator<T>;
 
 	vector() : length(0), space(1) {
 		arr = new T[space];
+	}
+	
+	vector(T* begin, T* end) noexcept {
+		
+		T* initialPointer = begin;
+		
+		size_t count = 0;
+	
+		while (initialPointer != end) {
+			initialPointer++;
+			count++;
+		}
+		
+		delete[] arr;
+		arr = new T[count * 2];
+	
+		length = count;
+		space = count * 2;
+
+		for (size_t i = 0; i < length; i++) {
+			arr[i] = begin[i];
+		}
 	}
 
 	vector(std::initializer_list<T> list) {
@@ -159,6 +228,24 @@ public:
 
 	~vector() {
 		delete[] arr;
+	}
+
+	vector& operator= (vector<T>&& Vector) noexcept {
+		length = Vector.length;
+		space = Vector.space;
+
+		delete[] arr;
+		arr = new T[space];
+
+		for (size_t i = 0; i < length; i++) {
+			arr[i] = Vector.arr[i];
+		}
+
+		Vector.arr = nullptr;
+		Vector.length = 0;
+		Vector.space = 0;
+
+		return *this;
 	}
 
 	vector& operator= (vector<T>& Vector) {
@@ -270,26 +357,32 @@ public:
 		arr = arr2;
 	}
 
-	void resize(int size) {
+	void resize(size_t size) {
 		if (size <= 0) {
 			throw std::invalid_argument("Invalid Operation");
 		}
 
 		T* arr2 = new T[size];
 
-		if (size > length) {
-			for (int i = 0; i < length; i++) {
-				arr2[i] = arr[i];
-			}
+		size_t minimum = std::min(size, length);
+
+		int index2 = 0;
+
+		
+		for (size_t i = 0; i < minimum ; i++) {
+			arr2[i] = arr[i];
+			index2++;
 		}
-		else if(size < length) {
-			for (int i = 0; i < size; i++) {
-				arr2[i] = arr[i];
+
+		while (index2 < size) {
+			if (std::is_same<T, char>::value) {
+				arr2[index2++] = '\0';
 			}
-		}
-		else {
-			for (int i = 0; i < size; i++) {
-				arr2[i] = arr[i];
+			else if (std::is_fundamental<T>::value) {
+				arr2[index2++] = 0;
+			}
+			else {
+				break;
 			}
 		}
 
@@ -328,7 +421,43 @@ public:
 		arr = arr2;
 	}
 
-	void erase(int index) {
+	void erase(const size_t& startingIndex, const size_t& endingIndex) {
+
+		if (empty()) {
+			throw std::underflow_error("Can't erase elements of empty vector");
+		}
+
+		if ((startingIndex < 0 || startingIndex >= length) || (endingIndex <= 0 || endingIndex >= length)) {
+			throw std::underflow_error("Invalid indexes can't erase");
+		}
+		
+
+		size_t erasedAmount = endingIndex - startingIndex;
+
+
+		length -= erasedAmount;
+		space = length * 2;
+
+		T* newArr = new T[space];
+
+		int index1 = 0;
+		int index2 = 0;
+
+		while (index1 < length) {
+			if (index2 >= startingIndex && endingIndex > index2) {
+				index2++;
+				continue;
+			}
+
+			newArr[index1++] = arr[index2++];
+		}
+
+		delete[] arr;
+
+		this->arr = newArr;
+	}
+
+	void erase(size_t index) {
 
 		if (empty()) {
 			throw std::invalid_argument("Can't erase elements in an empty vector");
@@ -488,12 +617,20 @@ public:
 		return ConstReverseIterator(arr - 1);
 	}
 
-	ConstIterator cbegin() const {
+	ConstIterator cbegin() {
 		return ConstIterator(arr);
 	}
 
-	ConstIterator cend()  const {
+	ConstIterator cend() {
 		return ConstIterator(arr + length);
+	}
+
+	ReverseIterator rbegin() {
+		return ReverseIterator(arr + length - 1);
+	}
+
+	ReverseIterator rend() {
+		return ReverseIterator(arr - 1);
 	}
 
 	size_t size() {
