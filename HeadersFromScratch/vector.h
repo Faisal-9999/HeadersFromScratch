@@ -195,6 +195,32 @@ public:
 		}
 	}
 
+	vector(size_t length) {
+		if (length < 0) {
+			throw std::underflow_error("Invalid Operation");
+		}
+
+		this->length = length;
+		this->space = length * 2;
+
+		arr = new T[space];
+	}
+
+	vector(size_t length, const T& value) {
+		if (length < 0) {
+			throw std::underflow_error("Invalid Operation");
+		}
+
+		this->length = length;
+		this->space = length * 2;
+
+		arr = new T[space];
+
+		for (size_t i = 0; i < length; i++) {
+			arr[i] = value;
+		}
+	}
+
 	vector(vector<T>&& Vector) {
 		delete[] this->arr;
 		
@@ -365,24 +391,17 @@ public:
 		T* arr2 = new T[size];
 
 		size_t minimum = std::min(size, length);
-
-		int index2 = 0;
-
 		
 		for (size_t i = 0; i < minimum ; i++) {
 			arr2[i] = arr[i];
-			index2++;
 		}
 
-		while (index2 < size) {
-			if (std::is_same<T, char>::value) {
-				arr2[index2++] = '\0';
-			}
-			else if (std::is_fundamental<T>::value) {
-				arr2[index2++] = 0;
+		for (size_t index2 = minimum; index2 < size; index2++) {
+			if constexpr (std::is_fundamental<T>::value) {
+				arr2[index2] = T{};
 			}
 			else {
-				break;
+				arr2[index2] = T();
 			}
 		}
 
@@ -470,22 +489,30 @@ public:
 
 		T* holder = new T[length - 1];
 
-		int index1 = 0;
-		int index2 = 0;
+		if (index != length - 1) {
 
-		while (index1 < length - 1) {
-			if (index2 == index) {
-				index2++;
+			int index1 = 0;
+
+			for (size_t i = 0; i < length; i++) {
+				if (i == index) {
+					i++;
+				}
+
+				holder[index1++] = arr[i];
 			}
-
-			holder[index1++] = arr[index2++];
 		}
+		else {
+			for (size_t i = 0; i < length - 1; i++) {
+				holder[i] = arr[i];
+			}
+		}
+
+
 
 		delete[] arr;
 		arr = holder;
 
 		length--;
-
 	}
 
 	T* begin() {
@@ -530,13 +557,22 @@ public:
 		space = amount;
 	}
 
-	void assign(int lengthOfAssign, T& value) {
+	void assign(int lengthOfAssign, const T& value) {
 		if (lengthOfAssign <= 0) {
 			return;
 		}
 
-		if (lengthOfAssign > space){
-			reserve(lengthOfAssign);
+		if (lengthOfAssign > length){
+			T* holder = new T[lengthOfAssign * 2];
+			length = lengthOfAssign;
+			space = lengthOfAssign * 2;
+			
+			for (size_t i = 0; i < lengthOfAssign; i++) {
+				holder[i] = arr[i];
+			}
+
+			delete[] arr;
+			this->arr = holder;
 		}
 
 		for (int i = 0; i < lengthOfAssign; i++) {
@@ -551,12 +587,62 @@ public:
 		}
 
 		new (&arr[length]) T(std::forward<Arguments>(args)...);
+		length++;
+	}
+
+	template<typename... Arguments>
+	void emplace(size_t index, Arguments&&... args) {
+		if (index < 0 || index > length) {
+			throw std::out_of_range("Out of bounds indexing");
+		}
+
+		T* arr2 = new T[length + 1];
+
+
+		new (&arr2[index]) T(std::forward<Arguments>(args)...);
+
+
+		size_t index1 = 0;
+		size_t index2 = 0;
+
+		while (index1 < length + 1) {
+			if (index2 == index) {
+				index1++;
+			}
+
+			arr2[index1++] = arr[index2++];
+		}
+
+		arr = arr2;
+		length++;
+		space = length;
+
+	}
+
+	template<typename... Arguments>
+	void emplace(T* arr, Arguments&&... args) {
+
+		size_t index = 0;
+		T* startingPointer = this->arr;
+
+		while (startingPointer != arr) {
+			index++;
+			startingPointer++;
+
+			if (index >= length) {
+				throw std::invalid_argument("Invalid Address");
+			}
+		}
+
+		emplace(index, (args)...);
+		
+		
 	}
 
 	void insert(size_t index, const T& value) {
 
 		if (index < 0 || index > length) {
-			throw std::underflow_error("Out of bounds indexing");
+			throw std::out_of_range("Out of bounds indexing");
 		}
 
 		T* arr = new T[length + 1];
@@ -586,7 +672,7 @@ public:
 		other.arr = arr;
 		arr = temp;
 
-		int temp2 = other.length;
+		size_t temp2 = other.length;
 		other.length = length;
 		length = temp2;
 
