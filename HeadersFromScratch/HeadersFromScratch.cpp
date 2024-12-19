@@ -2,11 +2,11 @@
 #include "string.h"
 
 
-
 int main(){
 
-	string a = "joe Biden";
-	string b = "joe Biden";
+	string a = "hello";
+	string b = "hello";
+
 
 	if (a == b) {
 		std::cout << "Same";
@@ -14,4 +14,5 @@ int main(){
 	else {
 		std::cout << "Not same";
 	}
+
 }
